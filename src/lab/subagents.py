@@ -14,4 +14,42 @@ def get_subagents() -> list[dict]:
       "system_prompt": chỉ dẫn cho subagent
     Gợi ý vai trò: explorer (đọc và báo cáo), implementer (thực hiện), reviewer (kiểm tra độc lập).
     """
-    raise NotImplementedError("TODO: cài đặt get_subagents (xem guides/pseudocode/02_subagents.md)")
+    return [
+        {
+            "name": "explorer",
+            "description": (
+                "Delegate to explorer to inspect workspace files, read README or task instructions, "
+                "check data formats, logs, and docstrings before making changes. "
+                "Use this to understand the task and report findings without modifying files."
+            ),
+            "system_prompt": (
+                "You are an exploration subagent. Your role is to read and analyze files, docstrings, "
+                "data formats, and error traces. Report your factual findings clearly. "
+                "Do NOT modify any files."
+            ),
+        },
+        {
+            "name": "implementer",
+            "description": (
+                "Delegate to implementer to make file edits, implement fixes or data cleaning logic, "
+                "run scripts and tests, and report execution results. "
+                "Use this when code changes or script runs are needed."
+            ),
+            "system_prompt": (
+                "You are an implementation subagent. Your role is to edit files, implement solutions, "
+                "run tests or scripts via the shell, and report what changes were made and their outcomes."
+            ),
+        },
+        {
+            "name": "reviewer",
+            "description": (
+                "Delegate to reviewer to independently verify solutions, check edge cases, "
+                "run validation tests, and ensure all output formats match requirements. "
+                "Use this before finishing a task to verify correctness."
+            ),
+            "system_prompt": (
+                "You are a review and verification subagent. Your role is to inspect results, "
+                "run test suites or validation checks, and verify that all task rules and requirements are met."
+            ),
+        },
+    ]
