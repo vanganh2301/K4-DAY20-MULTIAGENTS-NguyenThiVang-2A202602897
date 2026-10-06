@@ -6,7 +6,7 @@
 
 | Họ tên | Mã sinh viên | Phần đóng góp |
 |---|---|---|
-| Nguyễn Thị Vàng | 2A202602897 | 100% |
+| Nguyễn Thị Vàng | 2A202602897 | Cài đặt harness (agent, subagents, runner, curator); Thực nghiệm toàn bộ 3 điều kiện (baseline, subagents, skills-auto); Phân loại lỗi và chẩn đoán căn nguyên; Thực hiện quy trình đóng băng kỹ năng (freeze protocol); Tổng hợp bảng so sánh và phân tích, hoàn thiện toàn bộ báo cáo (Mục 1–10) |
 
 - Mô hình (tên deployment hoặc `LAB_MODEL`), nhiệt độ (`LAB_TEMPERATURE`), `recursion_limit`:
 - Phiên bản Deep Agents (`pip show deepagents`), hệ điều hành, chạy trực tiếp hay trong Docker:

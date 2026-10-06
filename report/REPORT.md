@@ -4,7 +4,7 @@
 
 | Họ tên | Mã sinh viên | Phần đóng góp |
 |---|---|---|
-| Nguyễn Thị Vàng | 2A202602897 | 100% |
+| Nguyễn Thị Vàng | 2A202602897 | Cài đặt harness (agent, subagents, runner, curator); Thực nghiệm toàn bộ 3 điều kiện (baseline, subagents, skills-auto); Phân loại lỗi và chẩn đoán căn nguyên; Thực hiện quy trình đóng băng kỹ năng (freeze protocol); Tổng hợp bảng so sánh và phân tích, hoàn thiện toàn bộ báo cáo (Mục 1–10) |
 
 - Mô hình: `meta/llama-3.2-11b-vision-instruct` (NVIDIA NIM OpenAI-compatible gateway: `https://integrate.api.nvidia.com/v1`)
 - Nhiệt độ (`LAB_TEMPERATURE`): `0`
