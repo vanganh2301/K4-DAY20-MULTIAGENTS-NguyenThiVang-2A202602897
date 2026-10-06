@@ -3,9 +3,9 @@
   "condition": "skills-auto",
   "role": "learn",
   "error": null,
-  "timestamp": "2026-10-06T13:05:35.739851+00:00",
+  "timestamp": "2026-10-06T12:59:41.941928+00:00",
   "skills_sha256": "925537db2474c099f4eaa720aad7374cf1a69e7c937e14d12e954ce6aee57599",
-  "seconds": 9.5,
+  "seconds": 10.4,
   "tokens": {
     "input": 4088,
     "output": 126,
@@ -23,7 +23,7 @@
     {
       "name": "visible_suite_passes",
       "passed": false,
-      "detail": "2 failed, 4 passed in 0.15s"
+      "detail": "2 failed, 4 passed in 0.14s"
     },
     {
       "name": "tests_not_modified",

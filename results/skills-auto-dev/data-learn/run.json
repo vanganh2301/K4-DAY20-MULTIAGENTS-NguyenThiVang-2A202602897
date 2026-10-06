@@ -3,9 +3,9 @@
   "condition": "skills-auto",
   "role": "learn",
   "error": null,
-  "timestamp": "2026-10-06T13:05:55.015708+00:00",
+  "timestamp": "2026-10-06T12:59:53.780439+00:00",
   "skills_sha256": "925537db2474c099f4eaa720aad7374cf1a69e7c937e14d12e954ce6aee57599",
-  "seconds": 7.7,
+  "seconds": 5.6,
   "tokens": {
     "input": 4237,
     "output": 202,
@@ -23,37 +23,37 @@
     {
       "name": "north_q1_revenue",
       "passed": false,
-      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_12m9bof8\\\\workspace\\\\answer.json'"
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_pymh9vl7\\\\workspace\\\\answer.json'"
     },
     {
       "name": "north_q1_orders",
       "passed": false,
-      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_12m9bof8\\\\workspace\\\\answer.json'"
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_pymh9vl7\\\\workspace\\\\answer.json'"
     },
     {
       "name": "top_region",
       "passed": false,
-      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_12m9bof8\\\\workspace\\\\answer.json'"
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_pymh9vl7\\\\workspace\\\\answer.json'"
     },
     {
       "name": "missing_amount_orders",
       "passed": false,
-      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_12m9bof8\\\\workspace\\\\answer.json'"
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_pymh9vl7\\\\workspace\\\\answer.json'"
     },
     {
       "name": "duplicate_rows_removed",
       "passed": false,
-      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_12m9bof8\\\\workspace\\\\answer.json'"
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_pymh9vl7\\\\workspace\\\\answer.json'"
     },
     {
       "name": "rule_money_in_cents",
       "passed": false,
-      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_12m9bof8\\\\workspace\\\\answer.json'"
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_pymh9vl7\\\\workspace\\\\answer.json'"
     },
     {
       "name": "rule_meta_block",
       "passed": false,
-      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_12m9bof8\\\\workspace\\\\answer.json'"
+      "detail": "FileNotFoundError: [Errno 2] No such file or directory: 'C:\\\\Users\\\\admin\\\\AppData\\\\Local\\\\Temp\\\\lab_skills-auto_data-learn_pymh9vl7\\\\workspace\\\\answer.json'"
     },
     {
       "name": "rule_clean_csv",

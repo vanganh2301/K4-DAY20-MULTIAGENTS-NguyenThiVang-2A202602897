@@ -11,7 +11,8 @@
 - Mô hình (tên deployment hoặc `LAB_MODEL`), nhiệt độ (`LAB_TEMPERATURE`), `recursion_limit`: `meta/llama-3.2-11b-vision-instruct` (NVIDIA NIM), `LAB_TEMPERATURE=0`, `recursion_limit=60`
 - Phiên bản Deep Agents (`pip show deepagents`), hệ điều hành, chạy trực tiếp hay trong Docker: `deepagents 0.7.21`, Windows, chạy trực tiếp (host)
 - Số lần chạy tác vụ đã dùng / ngân sách: 0 / 25
-- Commit của tag `freeze`:
+- Commit của tag `freeze`: `4ea139698c653f1c429b795f2fb1d87616a558e9`
+- Số lần chạy tác vụ đã dùng / ngân sách: 21 / 25
 
 ## 2. Giả thuyết (commit TRƯỚC tag `freeze`, Phần 4.0)
 
@@ -95,37 +96,100 @@ Nhận xét: nhóm lỗi chiếm đa số là nhóm E (Vi phạm quy ước tổ
 
 ## 7. Kết quả so sánh (Phần 4.3, 4.4)
 
-> Dán nội dung `report/table.md` và kết quả `python scripts/check_breakdown.py`. Nêu các lần chạy có `error` hoặc `skills_modified = true` (nếu có) và cách xử lý.
+Bảng so sánh tổng hợp từ `report/table.md`:
+
+| Task | baseline | subagents | skills-auto |
+|---|---|---|---|
+| code-learn | 0/10 | 0/10 | 0/10 |
+| data-learn | 0/8 | 0/8 | 0/8 |
+| logs-learn | 0/9 | 0/9 | 0/9 |
+| code-eval | 0/11 | 0/11 | 0/11 |
+| data-eval | 0/9 | 0/9 | 0/9 |
+| logs-eval | 0/10 | 0/10 | 0/10 |
+| **Mean score - learning tasks** | 0.00 | 0.00 | 0.00 |
+| **Mean score - evaluation tasks** | 0.00 | 0.00 | 0.00 |
+| **Mean tokens per run** | 8,724 | 6,773 | 7,987 |
+| **Runs that read a skill** | 0/6 | 0/6 | 0/6 |
+
+Bảng phân rã chi tiết check từ `python scripts/check_breakdown.py`:
 
 ```text
-(dán bảng ở đây)
+condition     role    technical  house rules  mean tokens  read a skill
+baseline      eval      0/18         0/12           9,266      0/3     
+baseline      learn     0/18         0/9            8,183      0/3     
+subagents     eval      0/18         0/12           6,775      0/3     
+subagents     learn     0/18         0/9            6,772      0/3     
+skills-auto   eval      0/18         0/12           9,233      0/3     
+skills-auto   learn     0/18         0/9            6,741      0/3     
 ```
+
+Ghi chú xử lý bất thường:
+- Tất cả các lần chạy chính thức đều kết thúc thành công với `error: null`.
+- Không có lần chạy nào bị `skills_modified: true` (thư mục skills luôn được bảo vệ nguyên vẹn trong suốt quá trình chạy sandbox).
+- Bộ kiểm tra đóng băng `python scripts/verify_freeze.py` trả về `checked 6 runs of skill conditions: OK` (mã thoát 0).
 
 ## 8. Phân tích
 
-> Trả lời từng câu bằng số liệu từ mục 7 và bằng chứng từ vết. Kết quả âm hoặc không có khác biệt vẫn hợp lệ nếu được phân tích tốt.
+1. **Hiệu quả tương đối giữa các điều kiện**:
+   So với `baseline`, cả hai điều kiện `subagents` và `skills-auto` đều không làm thay đổi điểm số tổng thể trên cả tác vụ học (0.00) lẫn tác vụ đánh giá (0.00). Không có hiện tượng cải thiện điểm trên tác vụ học mà giảm trên tác vụ đánh giá (không có dấu hiệu overfitting hay memorization), mà kết quả đồng nhất ở mức sàn do mô hình Llama 3.2 11B gặp khó khăn trong việc tự kích hoạt chuỗi công cụ tệp nhiều bước.
 
-1. So với `baseline`, điều kiện nào cải thiện điểm tác vụ **học**? Điều kiện nào cải thiện điểm tác vụ **đánh giá**? Có điều kiện nào cải thiện tác vụ học nhưng không cải thiện tác vụ đánh giá? Nếu có, đó là dấu hiệu gì?
-2. Tách điểm thành check kỹ thuật và check quy ước (`rule_`). Skill do curator sinh giúp nhóm check nào? Check quy ước **mới** của tác vụ đánh giá có được skill giúp không, và vì sao?
-3. Dựa vào vết và `skills_read`, giải thích một check mà skill giúp đạt và một check mà skill không giúp (skill chưa được đọc, đọc nhưng không làm theo, skill thiếu hoặc sai).
-4. Chi phí: so sánh số token trung bình giữa các điều kiện. Điều kiện nào có hiệu quả tốt nhất theo điểm trên mỗi token? Đa tác tử có đáng chi phí trong thí nghiệm này không?
-5. Có dấu hiệu rò rỉ dữ liệu hoặc quá khớp nào trong skill sinh ra không? Nhóm đã phòng tránh như thế nào?
-6. Nhiễu: so sánh điểm tác vụ học của cùng bộ skill ở Phần 3.4 (đã sao lưu) và sau đóng băng. Chênh lệch bao nhiêu? Nó cho biết điều gì về độ tin cậy của các chênh lệch trong bảng ở mục 7?
+2. **Phân tích tách biệt check kỹ thuật và check quy ước (`rule_`)**:
+   - Check kỹ thuật: Đạt 0/18 ở tác vụ học và 0/18 ở tác vụ đánh giá.
+   - Check quy ước (`rule_`): Đạt 0/9 ở tác vụ học và 0/12 ở tác vụ đánh giá.
+   Bộ skill do curator sinh chưa giúp được nhóm check quy ước vì toàn bộ 6 tác vụ đều có `read a skill = 0/3`. Đặc biệt, với các check quy ước mới của tác vụ đánh giá (ví dụ quy ước mới không xuất hiện ở tập học), ngay cả khi skill được đọc, bộ skill tự sinh từ thất bại của tập học cũng không thể bao quát các quy ước mới nếu không có thông tin từ trước.
+
+3. **Bằng chứng từ vết (trace) và cơ chế kích hoạt skill**:
+   - Trong `trace.md` của các tác vụ thuộc `skills-auto`, trường `skills_read = 0`.
+   - Nguyên nhân: `description` của cả 3 skill tự sinh (`validate-task-description`, `check-input-data`, `follow-task-conventions`) đều được mô hình curator đặt dưới dạng phản ứng có điều kiện hẹp: *"When the task description is unclear..."*, *"When working with input data that is not provided..."*. Khi tác tử chính tiếp nhận đề bài đầy đủ từ hệ thống kiểm thử, mô hình đánh giá rằng đề bài đã rõ ràng và dữ liệu đã có sẵn, do đó nó quyết định bỏ qua việc đọc `skills/` mà tiến hành giải bài ngay.
+   - Bài học: Để skill tự sinh hoạt động hiệu quả, curator cần tạo `description` mang tính chỉ dẫn chủ động bắt buộc (proactive action guidance), ví dụ: *"Read before performing any data transformation or code refactoring"*.
+
+4. **Hiệu quả chi phí token và thời gian**:
+   - Số token trung bình: `subagents` (6,773 tokens/run) < `skills-auto` (7,987 tokens/run) < `baseline` (8,724 tokens/run).
+   - Đa tác tử (`subagents`) trong thí nghiệm này không làm tăng token cost mà ngược lại giảm khoảng 22% so với baseline do tác tử chính kết thúc lượt nhanh hơn hoặc giao việc tóm tắt thay vì lặp vòng lặp hội thoại mở rộng.
+   - Tuy nhiên, vì điểm số đầu ra của cả 3 điều kiện chưa vượt qua mức sàn, hiệu quả theo thang đo điểm số/token của cả ba đều bằng 0.
+
+5. **Kiểm soát rò rỉ dữ liệu (Data Leakage) và quá khớp (Overfitting)**:
+   - Quy trình đã tuân thủ nghiêm ngặt việc ngăn ngừa rò rỉ dữ liệu: hàm `curate_skills` chỉ nhận các kết quả có `role == "learn"`. Hàm `validate_skill` tích hợp bộ lọc `eval_markers()` tự động từ chối bất kỳ văn bản nào chứa từ khóa của tập đánh giá.
+   - Nội dung 3 skill sinh ra hoàn toàn có tính trừu tượng và tổng quát (hướng dẫn phương pháp luận, không chứa con số hay tên tệp cụ thể).
+
+6. **Phân tích nhiễu và độ tin cậy thực nghiệm**:
+   - So sánh kết quả của tập học ở lần chạy thử nghiệm trước đóng băng (`results/skills-auto-dev`) và lần chạy chính thức sau đóng băng (`results/skills-auto`):
+     + `code-learn`: 0/10 (dev) so với 0/10 (frozen), token: 4,214 vs 4,214.
+     + `data-learn`: 0/8 (dev) so với 0/8 (frozen), token: 4,439 vs 4,439.
+     + `logs-learn`: 0/9 (dev) so với 0/9 (frozen), token: 11,572 vs 11,572.
+   - Độ chênh lệch điểm số là 0.00 và độ chênh lệch token là 0%, phản ánh tính tất định và độ ổn định cao của môi trường thực thi tại cấu hình `LAB_TEMPERATURE=0`.
 
 ## 9. Hạn chế và tính hợp lệ
 
-> Nêu ít nhất 3 hạn chế và ảnh hưởng của từng hạn chế đến kết luận (ví dụ: chỉ 3 tác vụ mỗi vai trò, mỗi cấu hình chạy một lần, nhiễu của mô hình, tác vụ do giảng viên thiết kế sẵn quy ước, chỉ một mô hình).
-
-1.
-2.
-3.
+1. **Khả năng điều khiển công cụ của mô hình (Tool Calling Reliability)**: Mô hình ngôn ngữ kích thước 11B (Llama 3.2 11B Vision Instruct) đôi khi gặp hiện tượng xuất định dạng JSON của công cụ vào nội dung văn bản (message content) thay vì phát sinh lời gọi công cụ qua cấu trúc `tool_calls` chuẩn của API, dẫn đến việc không kích hoạt được các lệnh shell hay file write trên đĩa.
+2. **Quy mô tập tác vụ nhỏ**: Thí nghiệm bao gồm 3 tác vụ học và 3 tác vụ đánh giá (tổng 6 tác vụ). Kích thước mẫu nhỏ hạn chế khả năng kiểm định thống kê sâu và chưa phản ánh hết sự đa dạng của các bài toán kỹ thuật phần mềm phức tạp.
+3. **Cơ chế kích hoạt kỹ năng bị động (Passive Triggering)**: Bộ kỹ năng được sinh ra dựa trên mô tả điều kiện phản ứng (reactive triggers), khiến tác tử không đọc skill khi bắt đầu tác vụ (`skills_read = 0`), làm vô hiệu hóa tác dụng của tầng kỹ năng tự sinh trong điều kiện `skills-auto`.
 
 ## 10. Kết luận
 
-> Tối đa 5 câu. Chỉ khẳng định điều số liệu hỗ trợ. Nêu một đề xuất cải tiến tiếp theo.
+Thí nghiệm đã triển khai hoàn chỉnh một harness tác tử với Deep Agents, thiết lập quy trình sandbox cô lập, đo lường toàn diện chi phí token và vết thực thi, đồng thời kiểm chứng nghiêm ngặt giao thức đóng băng không rò rỉ dữ liệu thông qua Git và `verify_freeze.py`. Kết quả cho thấy mô hình 11B chưa đạt điểm ở cả 3 điều kiện do hạn chế trong việc duy trì chuỗi tool calling vật lý. Phát hiện thực nghiệm quan trọng nhất là "khoảng cách kích hoạt kỹ năng": skill tự sinh cần phải có câu lệnh mô tả mang tính chủ động (proactive) để tác tử luôn đọc trước khi hành động. Đề xuất cải tiến tiếp theo là bổ sung vào prompt của curator yêu cầu bắt buộc định dạng trigger cho skill ở dạng tiền điều kiện cưỡng chế (pre-condition enforcement).
 
 ## Phụ lục
 
 - Lệnh đã chạy (theo thứ tự):
-- Thử thách mở rộng (nếu có): hướng chọn, kết quả, nhận xét.
-- Ghi chú khác:
+  1. `pytest tests/test_01_provided.py` (12 passed)
+  2. `python scripts/tour.py` (Khảo sát các công cụ mặc định)
+  3. `pytest tests/test_02_agent.py` (9 passed)
+  4. `pytest tests/test_03_runner.py` (6 passed)
+  5. `python -m lab.runner --condition baseline --tasks data-learn` (Chạy thử nghiệm baseline ban đầu)
+  6. `python -m lab.runner --condition baseline --tasks code-learn logs-learn` (Hoàn thiện baseline trên tập học)
+  7. `python -m lab.runner --condition subagents --tasks learn` (Chạy subagents trên tập học)
+  8. `pytest tests/test_04_curator.py` (2 passed)
+  9. `python -m lab.curator` (Curator tự động sinh 3 skill vào `skills/auto/`)
+  10. `python -m lab.runner --condition skills-auto --tasks learn` (Chạy dev skills-auto trên tập học)
+  11. `git add -A && git commit -m "hypotheses: define H1-H3 before eval"` (Commit giả thuyết H1-H3)
+  12. `git commit --allow-empty -m "freeze skills" && git tag freeze` (Đóng băng skill với tag freeze)
+  13. `Move-Item -Path results/skills-auto -Destination results/skills-auto-dev` (Sao lưu kết quả dev)
+  14. `python -m lab.runner --condition baseline --tasks eval` (Chạy baseline trên tập đánh giá)
+  15. `python -m lab.runner --condition subagents --tasks eval` (Chạy subagents trên tập đánh giá)
+  16. `python -m lab.runner --condition skills-auto --tasks all` (Chạy chính thức skills-auto trên cả 6 tác vụ)
+  17. `python scripts/verify_freeze.py` (Xác thực đóng băng: `checked 6 runs of skill conditions: OK`)
+  18. `python -m lab.compare > report/table.md` (Xuất bảng kết quả tổng hợp)
+  19. `python scripts/check_breakdown.py` (Thống kê chi tiết check kỹ thuật và quy ước)
+- Thử thách mở rộng: Khảo sát và tinh chỉnh khả năng tương thích nền tảng Windows với mã hóa UTF-8 trong tiến trình Git subprocess của `verify_freeze.py`.
+- Ghi chú khác: Mô hình sử dụng trong báo cáo là `meta/llama-3.2-11b-vision-instruct` kết nối qua NVIDIA NIM OpenAI-compatible gateway.
