@@ -6,7 +6,7 @@
 
 | Họ tên | Mã sinh viên | Phần đóng góp |
 |---|---|---|
-| | | |
+| Nguyễn Thị Vàng | 2A202602897 | 100% |
 
 - Mô hình (tên deployment hoặc `LAB_MODEL`), nhiệt độ (`LAB_TEMPERATURE`), `recursion_limit`:
 - Phiên bản Deep Agents (`pip show deepagents`), hệ điều hành, chạy trực tiếp hay trong Docker:
