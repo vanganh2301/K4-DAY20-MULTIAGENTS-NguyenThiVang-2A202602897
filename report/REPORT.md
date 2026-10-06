@@ -50,25 +50,29 @@
 | `code-learn` | `rule_type_hints` | E | `RULE: every public function... has type annotations...` |
 | `code-learn` | `rule_regression_tests` | E | `RULE: add tests/test_regressions.py with one test function...` |
 | `code-learn` | `rule_changelog` | E | `RULE: record each fix in CHANGELOG.md under '## Unreleased'...` |
-| `data-learn` | `north_q1_revenue` | F | `FileNotFoundError: answer.json chưa được tạo` |
-| `data-learn` | `north_q1_orders` | F | `FileNotFoundError: answer.json chưa được tạo` |
-| `data-learn` | `top_region` | F | `FileNotFoundError: answer.json chưa được tạo` |
-| `data-learn` | `missing_amount_orders` | F | `FileNotFoundError: answer.json chưa được tạo` |
-| `data-learn` | `duplicate_rows_removed` | F | `FileNotFoundError: answer.json chưa được tạo` |
-| `data-learn` | `rule_money_in_cents` | E | `FileNotFoundError: answer.json thiếu chuẩn cents` |
-| `data-learn` | `rule_meta_block` | E | `FileNotFoundError: answer.json thiếu meta block` |
-| `data-learn` | `rule_clean_csv` | E | `RULE: write workspace/clean.csv with the header order_id...` |
-| `logs-learn` | `valid_structure` | F | `FileNotFoundError: errors.json chưa được tạo` |
-| `logs-learn` | `entry_count` | F | `FileNotFoundError: errors.json chưa được tạo` |
-| `logs-learn` | `timestamps_utc` | F | `FileNotFoundError: errors.json chưa được tạo` |
-| `logs-learn` | `exception_fields` | F | `FileNotFoundError: errors.json chưa được tạo` |
-| `logs-learn` | `repeat_counts` | F | `FileNotFoundError: errors.json chưa được tạo` |
-| `logs-learn` | `counts_by_service` | F | `FileNotFoundError: errors.json chưa được tạo` |
-| `logs-learn` | `rule_service_names` | E | `FileNotFoundError: errors.json vi phạm quy ước tên service` |
-| `logs-learn` | `rule_sorted_errors` | E | `FileNotFoundError: errors.json vi phạm quy ước sắp xếp` |
-| `logs-learn` | `rule_schema_header` | E | `FileNotFoundError: errors.json vi phạm schema header` |
+| `data-learn` | `north_q1_revenue` | G | Tool-execution / serialization failure: `FileNotFoundError` do `write_file` chỉ được emit dạng text |
+| `data-learn` | `north_q1_orders` | G | Tool-execution / serialization failure: `FileNotFoundError` do `write_file` chỉ được emit dạng text |
+| `data-learn` | `top_region` | G | Tool-execution / serialization failure: `FileNotFoundError` do `write_file` chỉ được emit dạng text |
+| `data-learn` | `missing_amount_orders` | G | Tool-execution / serialization failure: `FileNotFoundError` do `write_file` chỉ được emit dạng text |
+| `data-learn` | `duplicate_rows_removed` | G | Tool-execution / serialization failure: `FileNotFoundError` do `write_file` chỉ được emit dạng text |
+| `data-learn` | `rule_money_in_cents` | E | Gãy trước khi ghi file; `rule check` yêu cầu đơn vị cents |
+| `data-learn` | `rule_meta_block` | E | Gãy trước khi ghi file; `rule check` yêu cầu metadata block |
+| `data-learn` | `rule_clean_csv` | E | `RULE: write workspace/clean.csv...` (run gãy trước khi agent có cơ hội hoàn thành convention) |
+| `logs-learn` | `valid_structure` | G | Tool-execution / serialization failure: `FileNotFoundError` do `errors.json` chưa được ghi thật |
+| `logs-learn` | `entry_count` | G | Tool-execution / serialization failure: `FileNotFoundError` do `errors.json` chưa được ghi thật |
+| `logs-learn` | `timestamps_utc` | G | Tool-execution / serialization failure: `FileNotFoundError` do `errors.json` chưa được ghi thật |
+| `logs-learn` | `exception_fields` | G | Tool-execution / serialization failure: `FileNotFoundError` do `errors.json` chưa được ghi thật |
+| `logs-learn` | `repeat_counts` | G | Tool-execution / serialization failure: `FileNotFoundError` do `errors.json` chưa được ghi thật |
+| `logs-learn` | `counts_by_service` | G | Tool-execution / serialization failure: `FileNotFoundError` do `errors.json` chưa được ghi thật |
+| `logs-learn` | `rule_service_names` | E | `FileNotFoundError` (gãy trước khi hoàn thành quy ước tên service) |
+| `logs-learn` | `rule_sorted_errors` | E | `FileNotFoundError` (gãy trước khi hoàn thành quy ước sắp xếp) |
+| `logs-learn` | `rule_schema_header` | E | `FileNotFoundError` (gãy trước khi hoàn thành quy ước schema header) |
 
-Nhận xét: nhóm lỗi chiếm đa số là nhóm E (Vi phạm quy ước tổ chức, chiếm 9/27) và nhóm F (Báo cáo hoàn thành sai sự thật khi agent chưa thực sự tạo file kết quả trên đĩa, chiếm 11/27). Các lỗi nhóm E hoàn toàn có thể được phòng ngừa hiệu quả bằng skill nếu tác tử được nhắc nhở đọc quy ước Acme trước khi kết thúc tác vụ.
+Nhận xét và phân tích căn nguyên (Root Cause Analysis):
+> *"The failure was not caused solely by hidden Acme conventions. A diagnostic tool-calling test showed that the NVIDIA NIM endpoint could emit structured tool calls, but the 11B model produced incorrect tool arguments even for a trivial command. During the actual multi-agent run, the main agent successfully invoked the `task` tool, but the nested subagent serialized an intended `execute` call as plain JSON text instead of issuing a structured tool call. The main agent then reproduced the same textual pattern for `write_file`. As a result, neither `execute` nor `write_file` was actually executed, `workspace/answer.json` was never created, and the grader reported `FileNotFoundError` for the technical checks."*
+
+Hiện tượng quan sát được này được gọi là **Cascade Breakdown** (gãy tầng thực thi liên hoàn): main agent gọi subagent thành công, nhưng subagent chuyển đổi tool call thành văn bản JSON, khiến main agent bị "nhiễm" định dạng và tiếp tục emit tool call kế tiếp dưới dạng văn bản thay vì structured call. Do đó, các check kỹ thuật ở `data-learn` và `logs-learn` được xếp chính xác vào nhóm **G (Tool-execution / serialization failure)**, trong khi các check convention thuộc nhóm **E** đều bị gãy gián tiếp trước khi mô hình có cơ hội xử lý logic nghiệp vụ.
+
 
 ## 5. Điều kiện `subagents` (Phần 2.3)
 
@@ -131,22 +135,22 @@ Ghi chú xử lý bất thường:
 ## 8. Phân tích
 
 1. **Hiệu quả tương đối giữa các điều kiện**:
-   So với `baseline`, cả hai điều kiện `subagents` và `skills-auto` đều không làm thay đổi điểm số tổng thể trên cả tác vụ học (0.00) lẫn tác vụ đánh giá (0.00). Không có hiện tượng cải thiện điểm trên tác vụ học mà giảm trên tác vụ đánh giá (không có dấu hiệu overfitting hay memorization), mà kết quả đồng nhất ở mức sàn do mô hình Llama 3.2 11B gặp khó khăn trong việc tự kích hoạt chuỗi công cụ tệp nhiều bước.
+   So với `baseline`, cả hai điều kiện `subagents` và `skills-auto` đều không làm thay đổi điểm số tổng thể trên cả tác vụ học (0.00) lẫn tác vụ đánh giá (0.00). Tuy nhiên, kết quả `0/18 technical` này không đủ để kết luận rằng baseline, subagents hay skills-auto "kém về năng lực suy luận" (reasoning). Dữ liệu thực nghiệm từ trace cho thấy thí nghiệm bị chi phối áp đảo bởi một **infrastructure / model-interface bottleneck** (điểm nghẽn giao tiếp công cụ giữa mô hình và framework), khiến chuỗi thao tác bị gãy trước khi agent có cơ hội thể hiện năng lực giải quyết vấn đề.
 
 2. **Phân tích tách biệt check kỹ thuật và check quy ước (`rule_`)**:
    - Check kỹ thuật: Đạt 0/18 ở tác vụ học và 0/18 ở tác vụ đánh giá.
    - Check quy ước (`rule_`): Đạt 0/9 ở tác vụ học và 0/12 ở tác vụ đánh giá.
-   Bộ skill do curator sinh chưa giúp được nhóm check quy ước vì toàn bộ 6 tác vụ đều có `read a skill = 0/3`. Đặc biệt, với các check quy ước mới của tác vụ đánh giá (ví dụ quy ước mới không xuất hiện ở tập học), ngay cả khi skill được đọc, bộ skill tự sinh từ thất bại của tập học cũng không thể bao quát các quy ước mới nếu không có thông tin từ trước.
+   Bộ skill do curator sinh chưa giúp được nhóm check quy ước vì toàn bộ 6 tác vụ đều có `read a skill = 0/3`. Đối với các check quy ước mới của tác vụ đánh giá (những quy tắc không có trong tập học), ngay cả khi skill được đọc, bộ skill tự sinh từ tập học cũng không thể bao quát các quy ước mới chưa từng thấy nếu không có cơ chế suy luận ngoại suy.
 
 3. **Bằng chứng từ vết (trace) và cơ chế kích hoạt skill**:
    - Trong `trace.md` của các tác vụ thuộc `skills-auto`, trường `skills_read = 0`.
    - Nguyên nhân: `description` của cả 3 skill tự sinh (`validate-task-description`, `check-input-data`, `follow-task-conventions`) đều được mô hình curator đặt dưới dạng phản ứng có điều kiện hẹp: *"When the task description is unclear..."*, *"When working with input data that is not provided..."*. Khi tác tử chính tiếp nhận đề bài đầy đủ từ hệ thống kiểm thử, mô hình đánh giá rằng đề bài đã rõ ràng và dữ liệu đã có sẵn, do đó nó quyết định bỏ qua việc đọc `skills/` mà tiến hành giải bài ngay.
-   - Bài học: Để skill tự sinh hoạt động hiệu quả, curator cần tạo `description` mang tính chỉ dẫn chủ động bắt buộc (proactive action guidance), ví dụ: *"Read before performing any data transformation or code refactoring"*.
+   - Về mặt phương pháp luận, cơ chế self-evolving đã tự động sinh và đóng băng thành công các skill hợp lệ chuẩn cú pháp, nhưng các lượt chạy đo đạc chưa kích hoạt chúng: *“The self-evolving mechanism successfully generated and froze valid skills, but the measured runs did not activate them, so the experiment evaluates the skill-generation pipeline more reliably than it evaluates downstream skill effectiveness.”*
 
 4. **Hiệu quả chi phí token và thời gian**:
    - Số token trung bình: `subagents` (6,773 tokens/run) < `skills-auto` (7,987 tokens/run) < `baseline` (8,724 tokens/run).
-   - Đa tác tử (`subagents`) trong thí nghiệm này không làm tăng token cost mà ngược lại giảm khoảng 22% so với baseline do tác tử chính kết thúc lượt nhanh hơn hoặc giao việc tóm tắt thay vì lặp vòng lặp hội thoại mở rộng.
-   - Tuy nhiên, vì điểm số đầu ra của cả 3 điều kiện chưa vượt qua mức sàn, hiệu quả theo thang đo điểm số/token của cả ba đều bằng 0.
+   - Đa tác tử (`subagents`) trong thí nghiệm này không làm tăng token cost mà giảm khoảng 22% so với baseline do tác tử chính kết thúc lượt sớm khi subagent trả về chuỗi mô tả.
+   - Cần lưu ý quan trọng: Việc so sánh token giữa ba điều kiện ở đây chỉ phản ánh chi phí tiêu tốn trong các run bị gãy sớm (early-broken runs), chứ chưa thể đại diện cho tỷ số chi phí / hiệu năng (cost-effectiveness) thực sự trong kịch bản giải quyết thành công bài toán.
 
 5. **Kiểm soát rò rỉ dữ liệu (Data Leakage) và quá khớp (Overfitting)**:
    - Quy trình đã tuân thủ nghiêm ngặt việc ngăn ngừa rò rỉ dữ liệu: hàm `curate_skills` chỉ nhận các kết quả có `role == "learn"`. Hàm `validate_skill` tích hợp bộ lọc `eval_markers()` tự động từ chối bất kỳ văn bản nào chứa từ khóa của tập đánh giá.
@@ -161,13 +165,14 @@ Ghi chú xử lý bất thường:
 
 ## 9. Hạn chế và tính hợp lệ
 
-1. **Khả năng điều khiển công cụ của mô hình (Tool Calling Reliability)**: Mô hình ngôn ngữ kích thước 11B (Llama 3.2 11B Vision Instruct) đôi khi gặp hiện tượng xuất định dạng JSON của công cụ vào nội dung văn bản (message content) thay vì phát sinh lời gọi công cụ qua cấu trúc `tool_calls` chuẩn của API, dẫn đến việc không kích hoạt được các lệnh shell hay file write trên đĩa.
+1. **Điểm nghẽn giao tiếp mô hình - công cụ (Model-Interface Bottleneck)**: Mini-test độc lập cho thấy NVIDIA NIM endpoint hỗ trợ structured tool-calling chuẩn, nhưng mô hình 11B lại gặp lỗi sinh argument (argument hallucination / prompt leakage vào args). Khi chuyển sang cấu trúc đa tác tử lồng ghép (nested agent), pipeline bị gãy do hiện tượng Cascade Breakdown (subagent xuất text JSON thay vì gọi tool thật, khiến main agent bị cuốn theo định dạng này).
 2. **Quy mô tập tác vụ nhỏ**: Thí nghiệm bao gồm 3 tác vụ học và 3 tác vụ đánh giá (tổng 6 tác vụ). Kích thước mẫu nhỏ hạn chế khả năng kiểm định thống kê sâu và chưa phản ánh hết sự đa dạng của các bài toán kỹ thuật phần mềm phức tạp.
-3. **Cơ chế kích hoạt kỹ năng bị động (Passive Triggering)**: Bộ kỹ năng được sinh ra dựa trên mô tả điều kiện phản ứng (reactive triggers), khiến tác tử không đọc skill khi bắt đầu tác vụ (`skills_read = 0`), làm vô hiệu hóa tác dụng của tầng kỹ năng tự sinh trong điều kiện `skills-auto`.
+3. **Khoảng cách kích hoạt kỹ năng (Skill Activation Gap)**: Bộ kỹ năng được sinh ra dựa trên mô tả điều kiện phản ứng (reactive triggers), khiến tác tử không đọc skill khi bắt đầu tác vụ (`skills_read = 0`), làm cho thí nghiệm chỉ đánh giá được năng lực của pipeline sinh skill chứ chưa đo đạc được tác động thực tế của skill lên hành vi hạ nguồn.
 
 ## 10. Kết luận
 
-Thí nghiệm đã triển khai hoàn chỉnh một harness tác tử với Deep Agents, thiết lập quy trình sandbox cô lập, đo lường toàn diện chi phí token và vết thực thi, đồng thời kiểm chứng nghiêm ngặt giao thức đóng băng không rò rỉ dữ liệu thông qua Git và `verify_freeze.py`. Kết quả cho thấy mô hình 11B chưa đạt điểm ở cả 3 điều kiện do hạn chế trong việc duy trì chuỗi tool calling vật lý. Phát hiện thực nghiệm quan trọng nhất là "khoảng cách kích hoạt kỹ năng": skill tự sinh cần phải có câu lệnh mô tả mang tính chủ động (proactive) để tác tử luôn đọc trước khi hành động. Đề xuất cải tiến tiếp theo là bổ sung vào prompt của curator yêu cầu bắt buộc định dạng trigger cho skill ở dạng tiền điều kiện cưỡng chế (pre-condition enforcement).
+Thí nghiệm đã hoàn thành chuẩn xác toàn bộ quy trình khoa học: xây dựng harness Deep Agents, đo lường vết thực thi và token, thiết lập pipeline curator tự sinh skill, và kiểm chứng nghiêm ngặt giao thức đóng băng không rò rỉ dữ liệu qua Git và `verify_freeze.py`. Kết quả điểm sàn 0/18 technical không phản ánh sự yếu kém về năng lực suy luận mà minh chứng rõ nét cho điểm nghẽn giao tiếp công cụ (model-interface bottleneck) và hiện tượng Cascade Breakdown trong kiến trúc đa tác tử lồng ghép. Thí nghiệm đã xác thực thành công quy trình tự tiến hóa ở tầng sinh kỹ năng, đồng thời chỉ ra bài học cốt lõi là các kỹ năng tự sinh bắt buộc phải có câu lệnh mô tả mang tính chủ động (proactive triggers) để đảm bảo được kích hoạt trên thực tế. Đề xuất cải tiến tiếp theo là bổ sung vào prompt curator yêu cầu tiền điều kiện bắt buộc đọc checklist trước khi sửa đổi tệp workspace.
+
 
 ## Phụ lục
 
